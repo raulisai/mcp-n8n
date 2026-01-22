@@ -1,0 +1,123 @@
+{
+    "name": "Gmail AI Assistant (Antigravity)",
+    "nodes": [
+        {
+            "parameters": {
+                "options": {}
+            },
+            "id": "7a3b8c1d-1234-4567-890a-b1c2d3e4f5g6",
+            "name": "Chat Trigger",
+            "type": "n8n-nodes-base.chatTrigger",
+            "typeVersion": 1,
+            "position": [
+                400,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "promptType": "define",
+                "text": "Eres un asistente de correo eficiente. Tu tarea es revisar los correos no leídos de las últimas 24 horas cuando el usuario lo solicite. \n\nSi encuentras correos, resume quién los envía, el asunto y un breve resumen del contenido.\nSi no hay correos, informa amablemente.\n\nFecha actual: {{ $now }}",
+                "options": {
+                    "systemMessage": "Eres un asistente experto en gestión de emails."
+                }
+            },
+            "id": "8b4c9d2e-5678-490a-b1c2-d3e4f5g6h7i8",
+            "name": "AI Agent",
+            "type": "n8n-nodes-base.aiAgent",
+            "typeVersion": 1.1,
+            "position": [
+                620,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "model": "gpt-4o-mini",
+                "options": {}
+            },
+            "id": "9c5d0e3f-9012-412b-c2d3-e4f5g6h7i8j9",
+            "name": "OpenAI Chat Model",
+            "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+            "typeVersion": 1,
+            "position": [
+                500,
+                520
+            ]
+        },
+        {
+            "parameters": {
+                "resource": "message",
+                "operation": "getAll",
+                "limit": 10,
+                "filters": {
+                    "q": "is:unread newer_than:1d"
+                }
+            },
+            "id": "0d6e1f4g-3456-434c-d3e4-f5g6h7i8j9k0",
+            "name": "Gmail Tool",
+            "type": "n8n-nodes-base.gmail",
+            "typeVersion": 2.1,
+            "position": [
+                850,
+                520
+            ]
+        },
+        {
+            "parameters": {},
+            "id": "1e7f2g5h-7890-456d-e4f5-g6h7i8j9k0l1",
+            "name": "Window Buffer Memory",
+            "type": "@n8n/n8n-nodes-langchain.memoryWindowBuffer",
+            "typeVersion": 1,
+            "position": [
+                650,
+                520
+            ]
+        }
+    ],
+    "connections": {
+        "Chat Trigger": {
+            "main": [
+                [
+                    {
+                        "node": "AI Agent",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "OpenAI Chat Model": {
+            "ai_languageModel": [
+                [
+                    {
+                        "node": "AI Agent",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Gmail Tool": {
+            "ai_tool": [
+                [
+                    {
+                        "node": "AI Agent",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Window Buffer Memory": {
+            "ai_memory": [
+                [
+                    {
+                        "node": "AI Agent",
+                        "index": 0
+                    }
+                ]
+            ]
+        }
+    },
+    "settings": {
+        "executionOrder": "v1"
+    }
+}

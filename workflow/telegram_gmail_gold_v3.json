@@ -1,0 +1,223 @@
+{
+    "name": "Gmail Search Telegram (Gold Standard v3.1)",
+    "nodes": [
+        {
+            "parameters": {
+                "content": "## Telegram Gmail Search\n**Overview:** Busca correos en Gmail mediante comandos de Telegram."
+            },
+            "id": "note-overview",
+            "name": "Note: Overview",
+            "type": "n8n-nodes-base.stickyNote",
+            "typeVersion": 1,
+            "position": [
+                200,
+                -100
+            ]
+        },
+        {
+            "parameters": {
+                "content": "## Setup\n1. Asegura tener conectadas las credenciales de Telegram, Gmail y Google Gemini."
+            },
+            "id": "note-setup",
+            "name": "Note: Setup",
+            "type": "n8n-nodes-base.stickyNote",
+            "typeVersion": 1,
+            "position": [
+                550,
+                -100
+            ]
+        },
+        {
+            "parameters": {
+                "content": "## Compliance\n- AI Agent v3.1\n- Use of Tool-specific nodes\n- JSON output parsing with Code node"
+            },
+            "id": "note-compliance",
+            "name": "Note: Compliance",
+            "type": "n8n-nodes-base.stickyNote",
+            "typeVersion": 1,
+            "position": [
+                900,
+                -100
+            ]
+        },
+        {
+            "parameters": {
+                "updates": [
+                    "message"
+                ]
+            },
+            "id": "069ebbca-a40a-491d-964d-5c564da996f0",
+            "name": "Telegram Trigger",
+            "type": "n8n-nodes-base.telegramTrigger",
+            "typeVersion": 1,
+            "position": [
+                200,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "options": {
+                    "systemMessage": "You are a professional Gmail search assistant. Use the gmailTool to fulfill user requests via Telegram. Return results in a structured format."
+                }
+            },
+            "id": "a33aae54-bd97-4a55-88cb-ffe4754400dd",
+            "name": "AI Agent",
+            "type": "@n8n/n8n-nodes-langchain.agent",
+            "typeVersion": 3.1,
+            "position": [
+                416,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "operation": "getAll",
+                "returnAll": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Return_All', ``, 'boolean') }}",
+                "simple": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Simplify', ``, 'boolean') }}",
+                "filters": {},
+                "options": {}
+            },
+            "id": "c43150b8-7c5a-4bdf-a5a1-52be8034ba69",
+            "name": "Get many messages in Gmail",
+            "type": "n8n-nodes-base.gmailTool",
+            "typeVersion": 2.2,
+            "position": [
+                608,
+                550
+            ],
+            "credentials": {
+                "gmailOAuth2": {
+                    "id": "ezmNrlT7G112HKMu",
+                    "name": "Gmail account"
+                }
+            }
+        },
+        {
+            "parameters": {},
+            "id": "689ee0f5-52d8-4b98-88c5-ed9d471c2fa5",
+            "name": "Google Gemini Chat Model",
+            "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+            "typeVersion": 1,
+            "position": [
+                288,
+                550
+            ],
+            "credentials": {
+                "googlePalmApi": {
+                    "id": "F1ntLZvfs4GUVTE4",
+                    "name": "Google Gemini(PaLM) Api account 2"
+                }
+            }
+        },
+        {
+            "parameters": {},
+            "id": "590584e2-4893-4962-bff0-deb1ef2d2946",
+            "name": "Simple Memory",
+            "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+            "typeVersion": 1.3,
+            "position": [
+                464,
+                550
+            ]
+        },
+        {
+            "parameters": {
+                "jsCode": "const raw = $json.output;\nif (!raw) return { json: { text: \"No se encontraron resultados.\" } };\nreturn { json: { text: raw } };"
+            },
+            "id": "56413574-94d0-4026-b8ae-608eb0cfee77",
+            "name": "Format Response",
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+                720,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "chatId": "={{ $('Telegram Trigger').item.json.message.from.id }}",
+                "text": "={{ $json.text }}",
+                "additionalFields": {
+                    "parse_mode": "Markdown"
+                }
+            },
+            "id": "telegram-send",
+            "name": "Telegram Send",
+            "type": "n8n-nodes-base.telegram",
+            "typeVersion": 1.2,
+            "position": [
+                950,
+                300
+            ]
+        }
+    ],
+    "connections": {
+        "Telegram Trigger": {
+            "main": [
+                [
+                    {
+                        "node": "AI Agent",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Google Gemini Chat Model": {
+            "ai_languageModel": [
+                [
+                    {
+                        "node": "AI Agent",
+                        "type": "ai_languageModel",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Simple Memory": {
+            "ai_memory": [
+                [
+                    {
+                        "node": "AI Agent",
+                        "type": "ai_memory",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Get many messages in Gmail": {
+            "ai_tool": [
+                [
+                    {
+                        "node": "AI Agent",
+                        "type": "ai_tool",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "AI Agent": {
+            "main": [
+                [
+                    {
+                        "node": "Format Response",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Format Response": {
+            "main": [
+                [
+                    {
+                        "node": "Telegram Send",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        }
+    }
+}

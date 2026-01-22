@@ -1,0 +1,242 @@
+{
+    "name": "LinkedIn GSheet Telegram Agent",
+    "nodes": [
+        {
+            "parameters": {
+                "rule": {
+                    "interval": [
+                        {
+                            "field": "hours",
+                            "hoursInterval": 1
+                        }
+                    ]
+                }
+            },
+            "id": "node-trigger",
+            "name": "Schedule Trigger",
+            "type": "n8n-nodes-base.scheduleTrigger",
+            "typeVersion": 1.1,
+            "position": [
+                100,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "operation": "getAll",
+                "limit": 5,
+                "filters": {
+                    "q": "from:linkedin.com \"sent you a message\""
+                }
+            },
+            "id": "node-gmail-search",
+            "name": "Search LinkedIn Emails",
+            "type": "n8n-nodes-base.gmail",
+            "typeVersion": 2.1,
+            "position": [
+                280,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "conditions": {
+                    "string": [
+                        {
+                            "value1": "={{ $json.snippet }}",
+                            "operation": "contains",
+                            "value2": "sent you a message"
+                        }
+                    ]
+                }
+            },
+            "id": "node-filter",
+            "name": "Filter Relevant Emails",
+            "type": "n8n-nodes-base.if",
+            "typeVersion": 1,
+            "position": [
+                460,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "model": "gemini-1.5-flash",
+                "options": {
+                    "systemMessage": "Extract the LinkedIn sender name and the actual message content from this email snippet. Also, propose a professional and friendly response."
+                }
+            },
+            "id": "node-ai-extraction",
+            "name": "AI: Extract & Draft",
+            "type": "@n8n/n8n-nodes-langchain.agent",
+            "typeVersion": 3.1,
+            "position": [
+                640,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "operation": "append",
+                "sheetId": "YOUR_SHEET_ID",
+                "range": "Sheet1!A:E",
+                "options": {}
+            },
+            "id": "node-gsheet",
+            "name": "Save to Google Sheets",
+            "type": "n8n-nodes-base.googleSheets",
+            "typeVersion": 4.1,
+            "position": [
+                820,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "chatId": "YOUR_TELEGRAM_CHAT_ID",
+                "text": "=🔔 *Nuevo mensaje de LinkedIn*\n\n👤 *De:* {{ $json.sender }}\n\n💬 *Mensaje:* {{ $json.message }}\n\n📝 *Propuesta:* {{ $json.draft }}\n\n¿Quieres enviar esta respuesta?",
+                "replyMarkup": "inline_keyboard",
+                "inlineKeyboard": [
+                    [
+                        {
+                            "text": "✅ Enviar",
+                            "callback_data": "approve"
+                        },
+                        {
+                            "text": "✏️ Editar",
+                            "callback_data": "edit"
+                        }
+                    ]
+                ]
+            },
+            "id": "node-telegram-auth",
+            "name": "Telegram: Auth Request",
+            "type": "n8n-nodes-base.telegram",
+            "typeVersion": 1.1,
+            "position": [
+                1000,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "resume": "onWebhook",
+                "webhookUrl": "={{ $execution.webhookUrl }}"
+            },
+            "id": "node-wait",
+            "name": "Wait for Approval",
+            "type": "n8n-nodes-base.wait",
+            "typeVersion": 1,
+            "position": [
+                1180,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "method": "POST",
+                "url": "LINKEDIN_AUTOMATION_API_OR_WEBHOOK",
+                "sendBody": true,
+                "bodyParameters": {
+                    "parameters": [
+                        {
+                            "name": "recipient",
+                            "value": "={{ $json.sender }}"
+                        },
+                        {
+                            "name": "message",
+                            "value": "={{ $json.draft }}"
+                        }
+                    ]
+                }
+            },
+            "id": "node-linkedin-send",
+            "name": "Send LinkedIn Message",
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 4.1,
+            "position": [
+                1360,
+                300
+            ]
+        }
+    ],
+    "connections": {
+        "Schedule Trigger": {
+            "main": [
+                [
+                    {
+                        "node": "Search LinkedIn Emails",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Search LinkedIn Emails": {
+            "main": [
+                [
+                    {
+                        "node": "Filter Relevant Emails",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Filter Relevant Emails": {
+            "main": [
+                [
+                    {
+                        "node": "AI: Extract & Draft",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "AI: Extract & Draft": {
+            "main": [
+                [
+                    {
+                        "node": "Save to Google Sheets",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Save to Google Sheets": {
+            "main": [
+                [
+                    {
+                        "node": "Telegram: Auth Request",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Telegram: Auth Request": {
+            "main": [
+                [
+                    {
+                        "node": "Wait for Approval",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Wait for Approval": {
+            "main": [
+                [
+                    {
+                        "node": "Send LinkedIn Message",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        }
+    }
+}

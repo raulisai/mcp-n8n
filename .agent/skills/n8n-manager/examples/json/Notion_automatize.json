@@ -1,0 +1,519 @@
+{
+    "nodes": [
+        {
+            "parameters": {
+                "content": ""
+            },
+            "id": "de0ad1c0-a05e-4220-8380-930f8713ff4c",
+            "name": "Note: Overview",
+            "type": "n8n-nodes-base.stickyNote",
+            "position": [
+                368,
+                240
+            ],
+            "typeVersion": 1
+        },
+        {
+            "parameters": {
+                "content": ""
+            },
+            "id": "02a99a3f-1db0-4b07-a348-75f52f2b7b02",
+            "name": "Note: Setup",
+            "type": "n8n-nodes-base.stickyNote",
+            "position": [
+                368,
+                384
+            ],
+            "typeVersion": 1
+        },
+        {
+            "parameters": {
+                "content": ""
+            },
+            "id": "efe0ed7e-48d8-4689-89e1-0fdf1f4d4a98",
+            "name": "Note: Compliance",
+            "type": "n8n-nodes-base.stickyNote",
+            "position": [
+                368,
+                528
+            ],
+            "typeVersion": 1
+        },
+        {
+            "parameters": {
+                "options": {}
+            },
+            "id": "030f923c-451f-4874-99da-57b1aed24b60",
+            "name": "Set: User Config (Cron Path)",
+            "type": "n8n-nodes-base.set",
+            "position": [
+                656,
+                288
+            ],
+            "typeVersion": 2
+        },
+        {
+            "parameters": {},
+            "id": "380dd22d-80a4-4fbd-b7f8-1a6b7ff406b9",
+            "name": "Cron: 9PM Daily",
+            "type": "n8n-nodes-base.cron",
+            "position": [
+                496,
+                288
+            ],
+            "typeVersion": 1
+        },
+        {
+            "parameters": {
+                "additionalFields": {}
+            },
+            "id": "d266e6da-4ac6-4c0b-a167-aa5edd8d085a",
+            "name": "Telegram: Ask Mood",
+            "type": "n8n-nodes-base.telegram",
+            "position": [
+                880,
+                288
+            ],
+            "typeVersion": 1,
+            "webhookId": "65ac5fbb-0830-4288-8594-74a1f437803d"
+        },
+        {
+            "parameters": {
+                "additionalFields": {}
+            },
+            "id": "bfaf3a9d-6b66-427f-903c-949fbd99ed41",
+            "name": "Telegram Trigger: Button Tap",
+            "type": "n8n-nodes-base.telegramTrigger",
+            "position": [
+                496,
+                720
+            ],
+            "typeVersion": 1,
+            "webhookId": "dcd2fd5c-02d2-4ac5-a97a-ecd7865c118d"
+        },
+        {
+            "parameters": {
+                "options": {}
+            },
+            "id": "0f3abed9-c121-46b0-a516-342e9e7f8d93",
+            "name": "Set: User Config (Trigger Path)",
+            "type": "n8n-nodes-base.set",
+            "position": [
+                688,
+                720
+            ],
+            "typeVersion": 2
+        },
+        {
+            "parameters": {
+                "options": {}
+            },
+            "id": "f31171da-74fb-4fea-8816-ce09dda4901a",
+            "name": "Set: Mood Parse",
+            "type": "n8n-nodes-base.set",
+            "position": [
+                896,
+                720
+            ],
+            "typeVersion": 2
+        },
+        {
+            "parameters": {
+                "options": {}
+            },
+            "id": "9af41a94-ffab-408a-9a28-a12a619b1fe7",
+            "name": "IF: Tired?",
+            "type": "n8n-nodes-base.if",
+            "position": [
+                1120,
+                720
+            ],
+            "typeVersion": 2
+        },
+        {
+            "parameters": {
+                "additionalFields": {}
+            },
+            "id": "60bee3b6-445e-4139-8827-7abf88b89101",
+            "name": "Telegram: Send Meditation",
+            "type": "n8n-nodes-base.telegram",
+            "position": [
+                1328,
+                608
+            ],
+            "typeVersion": 1,
+            "webhookId": "d88b56db-3de0-4f00-b324-f03ab9c4195f"
+        },
+        {
+            "parameters": {},
+            "id": "1c0e1652-d4d4-41bf-af85-58f764ae1af6",
+            "name": "GPT: Reflection Prompt (optional)",
+            "type": "n8n-nodes-base.openAi",
+            "position": [
+                1552,
+                608
+            ],
+            "typeVersion": 2
+        },
+        {
+            "parameters": {
+                "options": {}
+            },
+            "id": "8e623797-d6c8-4f61-83f2-83d949f40998",
+            "name": "IF: GPT Enabled?",
+            "type": "n8n-nodes-base.if",
+            "position": [
+                1776,
+                608
+            ],
+            "typeVersion": 2
+        },
+        {
+            "parameters": {
+                "options": {}
+            },
+            "id": "e26a5e9f-8c97-45b4-8f25-23ffd43156bc",
+            "name": "Set: Notion Entry (Tired)",
+            "type": "n8n-nodes-base.set",
+            "position": [
+                2000,
+                528
+            ],
+            "typeVersion": 2
+        },
+        {
+            "parameters": {},
+            "id": "c6cb42a0-0b08-4758-8860-19b8699101f8",
+            "name": "Code: Pick Affirmation",
+            "type": "n8n-nodes-base.code",
+            "position": [
+                1776,
+                720
+            ],
+            "typeVersion": 2
+        },
+        {
+            "parameters": {
+                "pageId": {
+                    "__rl": true,
+                    "mode": "url",
+                    "value": ""
+                },
+                "options": {}
+            },
+            "id": "8715bb61-739e-473b-8909-74e28da3f232",
+            "name": "Notion: Log Entry (Tired)",
+            "type": "n8n-nodes-base.notion",
+            "position": [
+                2208,
+                528
+            ],
+            "typeVersion": 2
+        },
+        {
+            "parameters": {
+                "options": {}
+            },
+            "id": "705e6f04-57dd-444f-9ef4-d70ff98d8b86",
+            "name": "Email: Goodnight (Tired)",
+            "type": "n8n-nodes-base.emailSend",
+            "position": [
+                2432,
+                528
+            ],
+            "typeVersion": 2,
+            "webhookId": "1990f74f-03fa-4810-bd92-de63679ba437"
+        },
+        {
+            "parameters": {
+                "additionalFields": {}
+            },
+            "id": "55502e88-b50a-45e1-a1f5-e992d9c6e90f",
+            "name": "Telegram: Celebrate Win",
+            "type": "n8n-nodes-base.telegram",
+            "position": [
+                1328,
+                864
+            ],
+            "typeVersion": 1,
+            "webhookId": "a9429da2-c7e6-44ec-a427-5ef493e1007a"
+        },
+        {
+            "parameters": {},
+            "id": "f9c7963d-470c-401c-a6ca-d1e754571e2d",
+            "name": "Code: Pick Affirmation (Great)",
+            "type": "n8n-nodes-base.code",
+            "position": [
+                1552,
+                864
+            ],
+            "typeVersion": 2
+        },
+        {
+            "parameters": {
+                "options": {}
+            },
+            "id": "7091a304-d2bc-42f5-a114-2a8b1d255fad",
+            "name": "Set: Notion Entry (Great)",
+            "type": "n8n-nodes-base.set",
+            "position": [
+                1776,
+                864
+            ],
+            "typeVersion": 2
+        },
+        {
+            "parameters": {
+                "pageId": {
+                    "__rl": true,
+                    "mode": "url",
+                    "value": ""
+                },
+                "options": {}
+            },
+            "id": "c438eeaf-e640-497f-9baf-0a5e4b3b9273",
+            "name": "Notion: Log Entry (Great)",
+            "type": "n8n-nodes-base.notion",
+            "position": [
+                2000,
+                864
+            ],
+            "typeVersion": 2
+        },
+        {
+            "parameters": {
+                "options": {}
+            },
+            "id": "74f47f53-d156-4b3f-bf39-a0253ead8872",
+            "name": "Email: Goodnight (Great)",
+            "type": "n8n-nodes-base.emailSend",
+            "position": [
+                2208,
+                864
+            ],
+            "typeVersion": 2,
+            "webhookId": "0f3a82c2-f410-4f6e-a672-b5f940423e83"
+        }
+    ],
+    "connections": {
+        "Set: User Config (Cron Path)": {
+            "main": [
+                [
+                    {
+                        "node": "Telegram: Ask Mood",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Cron: 9PM Daily": {
+            "main": [
+                [
+                    {
+                        "node": "Set: User Config (Cron Path)",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Telegram Trigger: Button Tap": {
+            "main": [
+                [
+                    {
+                        "node": "Set: User Config (Trigger Path)",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Set: User Config (Trigger Path)": {
+            "main": [
+                [
+                    {
+                        "node": "Set: Mood Parse",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Set: Mood Parse": {
+            "main": [
+                [
+                    {
+                        "node": "IF: Tired?",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "IF: Tired?": {
+            "main": [
+                [
+                    {
+                        "node": "Telegram: Send Meditation",
+                        "type": "main",
+                        "index": 0
+                    }
+                ],
+                [
+                    {
+                        "node": "Telegram: Celebrate Win",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Telegram: Send Meditation": {
+            "main": [
+                [
+                    {
+                        "node": "GPT: Reflection Prompt (optional)",
+                        "type": "main",
+                        "index": 0
+                    },
+                    {
+                        "node": "Code: Pick Affirmation",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "GPT: Reflection Prompt (optional)": {
+            "main": [
+                [
+                    {
+                        "node": "IF: GPT Enabled?",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "IF: GPT Enabled?": {
+            "main": [
+                [
+                    {
+                        "node": "Set: Notion Entry (Tired)",
+                        "type": "main",
+                        "index": 0
+                    }
+                ],
+                [
+                    {
+                        "node": "Set: Notion Entry (Tired)",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Set: Notion Entry (Tired)": {
+            "main": [
+                [
+                    {
+                        "node": "Notion: Log Entry (Tired)",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Code: Pick Affirmation": {
+            "main": [
+                [
+                    {
+                        "node": "GPT: Reflection Prompt (optional)",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Notion: Log Entry (Tired)": {
+            "main": [
+                [
+                    {
+                        "node": "Email: Goodnight (Tired)",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Telegram: Celebrate Win": {
+            "main": [
+                [
+                    {
+                        "node": "Code: Pick Affirmation (Great)",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Code: Pick Affirmation (Great)": {
+            "main": [
+                [
+                    {
+                        "node": "Set: Notion Entry (Great)",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Set: Notion Entry (Great)": {
+            "main": [
+                [
+                    {
+                        "node": "Notion: Log Entry (Great)",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Notion: Log Entry (Great)": {
+            "main": [
+                [
+                    {
+                        "node": "Email: Goodnight (Great)",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        }
+    },
+    "pinData": {},
+    "meta": {
+        "template": {
+            "author": "The Workflow Muse",
+            "credits": "Design & copy: The Workflow Muse — SheCodesFlow",
+            "subTitle": "Graceful 9PM wind‑down: Telegram mood tap → Notion log → goodnight email",
+            "categories": [
+                "Wellness",
+                "Lifestyle",
+                "Notion",
+                "Telegram",
+                "Email"
+            ],
+            "description": "## 🌸 The Quiet Evening Ritual — Wind‑Down Automation Flow\n**SEO Title:** The Quiet Evening Ritual — Wind‑Down Automation (Telegram + Notion + Email)  \n**Meta Description:** A graceful 9PM wind‑down routine for moms & creators: Telegram mood check, personalized content, Notion journal log, and a goodnight email with tomorrow’s affirmation.\n\n### What it does\n- 9:00 PM daily ping on Telegram: *“🌙 Time to wind down, sweet soul. How was your day?”*\n- User taps a mood button → *Tired* or *Great*\n- If **Tired** → sends a 5‑min meditation link + (optional) AI reflection prompt\n- If **Great** → celebrates the win + logs to Notion\n- Logs the entry to **Notion: Evening Reflection Log**\n- Sends a **Goodnight email** with tomorrow’s morning affirmation ✨\n\n### Why it’s fresh\nNot just journaling—this is a *ritualized transition* from work to rest, with warmth and automation.\n\n## 🔧 Setup Checklist (n8n Template Requirements)\n- Create credentials (no hardcoded keys):\n  - **Telegram** Bot (BotFather) → add to a private chat with you\n  - **Notion** (integration + database access)\n  - **Email** (Gmail OAuth or SMTP)\n- Make a Notion database named **Evening Reflection Log** with properties:\n  - **Name** (Title), **Mood** (Select), **Reflection** (Text), **Top Win** (Text), **Date** (Date), **Affirmation** (Text)\n- Import the provided CSV to auto‑create properties if needed.\n- Edit the **Set: User Config** node (email, db id, links, toggles).\n- Optional: Enable the GPT node by flipping `gpt_enabled` to `true` and attaching OpenAI credentials.\n\n## ✅ n8n Submission Compliance\n- Uses **Sticky Notes** with H2 markdown ✅\n- **No API keys** hardcoded in nodes ✅\n- Clear setup steps + credentials ✅\n- Descriptive, on‑brand copy with emojis ✅\n- Real, practical use case for wellness ✅",
+            "estimatedTime": "15 minutes",
+            "prerequisites": [
+                "Telegram bot & chat ID",
+                "Notion integration + DB",
+                "Email credentials"
+            ],
+            "documentationUrl": ""
+        },
+        "instanceId": "342399329b64a0d939d64f4d4ce7937b7d14ca0ca5b7915190fd5dbd6e8b5ddb"
+    }
+}

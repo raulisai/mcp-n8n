@@ -1,0 +1,194 @@
+{
+    "name": "LinkedIn Message Agent (Gold Standard v3.6 - Connection Fixed)",
+    "nodes": [
+        {
+            "parameters": {
+                "updates": [
+                    "message"
+                ],
+                "additionalFields": {}
+            },
+            "id": "node-tg-trigger",
+            "name": "Telegram Trigger",
+            "type": "n8n-nodes-base.telegramTrigger",
+            "typeVersion": 1,
+            "position": [
+                200,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "promptType": "define",
+                "text": "={{ $json.message.text }}",
+                "options": {
+                    "systemMessage": "Eres un analista experto en notificaciones. Tu objetivo es encontrar mensajes reales de personas en LinkedIn revisando los correos de Gmail.\n\nREGLAS DE ANALISIS:\n1. Los mensajes reales suelen venir de direcciones como 'inmail-hit-reply@linkedin.com' o contener 'sent you a message' o 'te ha enviado un mensaje' en el 'Snippet'.\n2. REVISA CUIDADOSAMENTE la lista de correos que te devuelva la herramienta. Si ves nombres de personas seguidos de 'via LinkedIn' o asuntos como 'Hybrid role' o 'Mensaje de...', esos son los que debes reportar.\n3. Responde en español resumiendo: Quién escribió, el asunto y un breve fragmento del mensaje."
+                }
+            },
+            "id": "node-ai-agent",
+            "name": "AI Agent",
+            "type": "@n8n/n8n-nodes-langchain.agent",
+            "typeVersion": 3.1,
+            "position": [
+                416,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "operation": "getAll",
+                "limit": 15,
+                "returnAll": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Return_All', '', 'boolean') }}",
+                "simple": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Simplify', '', 'boolean') }}",
+                "filters": {
+                    "q": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Gmail_Query', 'Gmail search (ej: from:linkedin.com mensaje)', 'string') }}"
+                }
+            },
+            "id": "node-gmail-tool",
+            "name": "Get many messages in Gmail",
+            "type": "n8n-nodes-base.gmailTool",
+            "typeVersion": 2.2,
+            "position": [
+                608,
+                550
+            ],
+            "credentials": {
+                "gmailOAuth2": {
+                    "id": "ezmNrlT7G112HKMu",
+                    "name": "Gmail account"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "options": {}
+            },
+            "id": "node-gemini-model",
+            "name": "Google Gemini Chat Model",
+            "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+            "typeVersion": 1,
+            "position": [
+                288,
+                550
+            ],
+            "credentials": {
+                "googlePalmApi": {
+                    "id": "F1ntLZvfs4GUVTE4",
+                    "name": "Google Gemini(PaLM) Api account 2"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "sessionIdType": "customKey",
+                "sessionKey": "={{ $('Telegram Trigger').item.json.message.from.id }}"
+            },
+            "id": "node-memory",
+            "name": "Simple Memory",
+            "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+            "typeVersion": 1.3,
+            "position": [
+                464,
+                550
+            ]
+        },
+        {
+            "parameters": {
+                "jsCode": "const raw = $json.output;\nif (!raw) return { json: { text: \"No se encontraron resultados.\" } };\nreturn { json: { text: raw } };"
+            },
+            "id": "node-format-code",
+            "name": "Format Response",
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+                720,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "chatId": "={{ $('Telegram Trigger').item.json.message.from.id }}",
+                "text": "={{ $json.text }}",
+                "additionalFields": {
+                    "parse_mode": "Markdown"
+                }
+            },
+            "id": "node-tg-send",
+            "name": "Telegram Send",
+            "type": "n8n-nodes-base.telegram",
+            "typeVersion": 1.2,
+            "position": [
+                950,
+                300
+            ]
+        }
+    ],
+    "connections": {
+        "Telegram Trigger": {
+            "main": [
+                [
+                    {
+                        "node": "AI Agent",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "AI Agent": {
+            "main": [
+                [
+                    {
+                        "node": "Format Response",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Google Gemini Chat Model": {
+            "ai_languageModel": [
+                [
+                    {
+                        "node": "AI Agent",
+                        "type": "ai_languageModel",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Simple Memory": {
+            "ai_memory": [
+                [
+                    {
+                        "node": "AI Agent",
+                        "type": "ai_memory",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Get many messages in Gmail": {
+            "ai_tool": [
+                [
+                    {
+                        "node": "AI Agent",
+                        "type": "ai_tool",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Format Response": {
+            "main": [
+                [
+                    {
+                        "node": "Telegram Send",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        }
+    }
+}

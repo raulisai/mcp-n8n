@@ -1,0 +1,197 @@
+{
+    "name": "Gmail Search via Telegram (Expert Ritual v2)",
+    "nodes": [
+        {
+            "parameters": {
+                "content": "## 📧 Gmail Search Bot via Telegram\n**Overview:** Este workflow permite buscar correos en Gmail enviando un nombre o palabra clave desde Telegram.\n\n### **How it works:**\n1. Escucha mensajes entrantes en Telegram.\n2. El **AI Agent** interpreta la busqueda.\n3. Usa la herramienta **Gmail Tool** para buscar mensajes.\n4. Devuelve los resultados encontrados directamente a Telegram."
+            },
+            "id": "note-overview",
+            "name": "Note: Overview",
+            "type": "n8n-nodes-base.stickyNote",
+            "typeVersion": 1,
+            "position": [
+                200,
+                100
+            ]
+        },
+        {
+            "parameters": {
+                "content": "## 🛠️ Setup\n1. **Telegram Bot:** Selecciona tu credencial de Telegram.\n2. **Gmail:** Selecciona tu credencial de Gmail en el nodo Gmail Tool.\n3. **OpenAI:** Selecciona tu credencial de OpenAI en el nodo Chat Model.\n\n### **Nota sobre errores:**\nLos triangulos rojos desaparecerán una vez selecciones tus credenciales guardadas en cada nodo."
+            },
+            "id": "note-setup",
+            "name": "Note: Setup",
+            "type": "n8n-nodes-base.stickyNote",
+            "typeVersion": 1,
+            "position": [
+                550,
+                100
+            ]
+        },
+        {
+            "parameters": {
+                "assignments": {
+                    "assignments": [
+                        {
+                            "id": "conf-limit",
+                            "name": "search_limit",
+                            "type": "number",
+                            "value": 5
+                        }
+                    ]
+                }
+            },
+            "id": "set-config",
+            "name": "Set: User Config",
+            "type": "n8n-nodes-base.set",
+            "typeVersion": 3.4,
+            "position": [
+                0,
+                350
+            ]
+        },
+        {
+            "parameters": {
+                "updates": [
+                    "message"
+                ]
+            },
+            "id": "telegram-trigger",
+            "name": "Telegram Trigger: Message",
+            "type": "n8n-nodes-base.telegramTrigger",
+            "typeVersion": 1,
+            "position": [
+                250,
+                350
+            ]
+        },
+        {
+            "parameters": {
+                "options": {
+                    "systemMessage": "Eres un asistente de busqueda de emails. Tu tarea es ayudar al usuario a encontrar correos en su cuenta de Gmail basandose en nombres, empresas o palabras clave que te proporcione por Telegram. \n\nInstrucciones:\n- Resume el Asunto, Remitente y Fecha de los correos encontrados.\n- Responde siempre de forma amable y profesional."
+                }
+            },
+            "id": "agent-1",
+            "name": "AI Agent: Email Assistant",
+            "type": "@n8n/n8n-nodes-langchain.agent",
+            "typeVersion": 1.7,
+            "position": [
+                550,
+                350
+            ]
+        },
+        {
+            "parameters": {
+                "model": "gpt-4o-mini",
+                "options": {}
+            },
+            "id": "model-1",
+            "name": "OpenAI Chat Model",
+            "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+            "typeVersion": 1.2,
+            "position": [
+                450,
+                550
+            ]
+        },
+        {
+            "parameters": {
+                "resource": "message",
+                "operation": "getAll",
+                "filters": {
+                    "q": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Query', 'The Gmail search query (e.g., from:John, subject:Invoice)', 'string') }}"
+                }
+            },
+            "id": "gmail-tool",
+            "name": "Gmail Tool",
+            "type": "n8n-nodes-base.gmailTool",
+            "typeVersion": 2.1,
+            "position": [
+                700,
+                550
+            ]
+        },
+        {
+            "parameters": {
+                "sessionIdType": "customKey",
+                "sessionKey": "={{ $json.message.from.id }}"
+            },
+            "id": "memory-1",
+            "name": "Window Buffer Memory",
+            "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+            "typeVersion": 1.2,
+            "position": [
+                570,
+                550
+            ]
+        },
+        {
+            "parameters": {
+                "chatId": "={{ $('Telegram Trigger: Message').item.json.message.from.id }}",
+                "text": "={{ $json.output }}",
+                "additionalFields": {
+                    "parse_mode": "Markdown"
+                }
+            },
+            "id": "telegram-send",
+            "name": "Telegram: Send Results",
+            "type": "n8n-nodes-base.telegram",
+            "typeVersion": 1.2,
+            "position": [
+                850,
+                350
+            ]
+        }
+    ],
+    "connections": {
+        "Telegram Trigger: Message": {
+            "main": [
+                [
+                    {
+                        "node": "AI Agent: Email Assistant",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "OpenAI Chat Model": {
+            "ai_languageModel": [
+                [
+                    {
+                        "node": "AI Agent: Email Assistant",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Gmail Tool": {
+            "ai_tool": [
+                [
+                    {
+                        "node": "AI Agent: Email Assistant",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Window Buffer Memory": {
+            "ai_memory": [
+                [
+                    {
+                        "node": "AI Agent: Email Assistant",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "AI Agent: Email Assistant": {
+            "main": [
+                [
+                    {
+                        "node": "Telegram: Send Results",
+                        "index": 0
+                    }
+                ]
+            ]
+        }
+    }
+}

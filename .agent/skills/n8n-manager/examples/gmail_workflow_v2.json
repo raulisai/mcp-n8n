@@ -1,0 +1,139 @@
+{
+    "name": "Gmail AI Assistant (Expert Version)",
+    "nodes": [
+        {
+            "parameters": {
+                "options": {}
+            },
+            "id": "7a3b8c1d",
+            "name": "When chat message received",
+            "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+            "typeVersion": 1.4,
+            "position": [
+                200,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "options": {
+                    "systemMessage": "Eres un asistente experto en gestión de emails. Tu tarea es revisar los correos no leídos de las últimas 24 horas cuando el usuario lo solicite. Resume quién los envía, el asunto y un breve resumen. Fecha actual: {{ $now }}"
+                }
+            },
+            "id": "8b4c9d2e",
+            "name": "AI Agent",
+            "type": "@n8n/n8n-nodes-langchain.agent",
+            "typeVersion": 1.7,
+            "position": [
+                450,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "model": "gpt-4o-mini",
+                "options": {}
+            },
+            "id": "9c5d0e3f",
+            "name": "OpenAI Chat Model",
+            "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+            "typeVersion": 1.2,
+            "position": [
+                350,
+                550
+            ]
+        },
+        {
+            "parameters": {
+                "resource": "message",
+                "operation": "getAll",
+                "limit": 10,
+                "filters": {
+                    "q": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Query', 'The search query for Gmail (e.g., is:unread newer_than:1d)', 'string') }}"
+                },
+                "options": {}
+            },
+            "id": "0d6e1f4g",
+            "name": "Gmail Tool",
+            "type": "n8n-nodes-base.gmail",
+            "typeVersion": 2.2,
+            "position": [
+                650,
+                550
+            ]
+        },
+        {
+            "parameters": {
+                "contextWindowLength": 10
+            },
+            "id": "1e7f2g5h",
+            "name": "Window Buffer Memory",
+            "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+            "typeVersion": 1.2,
+            "position": [
+                500,
+                550
+            ]
+        },
+        {
+            "parameters": {
+                "content": "## Asistente de Gmail Inteligente\nEste flujo utiliza un **AI Agent** para interactuar con tu cuenta de Gmail.\n\n### Funcionamiento:\n1. Recibe una orden por chat.\n2. El Agente usa la herramienta **Gmail Tool** con el filtro `$fromAI`.\n3. Resume los correos encontrados.\n\n**Nota:** Asegúrate de configurar las credenciales en los nodos rojos.",
+                "height": 250,
+                "width": 350
+            },
+            "id": "sticky-note-1",
+            "name": "Sticky Note",
+            "type": "n8n-nodes-base.stickyNote",
+            "typeVersion": 1,
+            "position": [
+                750,
+                200
+            ]
+        }
+    ],
+    "connections": {
+        "When chat message received": {
+            "main": [
+                [
+                    {
+                        "node": "AI Agent",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "OpenAI Chat Model": {
+            "ai_languageModel": [
+                [
+                    {
+                        "node": "AI Agent",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Gmail Tool": {
+            "ai_tool": [
+                [
+                    {
+                        "node": "AI Agent",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Window Buffer Memory": {
+            "ai_memory": [
+                [
+                    {
+                        "node": "AI Agent",
+                        "index": 0
+                    }
+                ]
+            ]
+        }
+    },
+    "settings": {
+        "executionOrder": "v1"
+    }
+}

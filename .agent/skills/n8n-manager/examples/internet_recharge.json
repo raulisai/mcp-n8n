@@ -1,0 +1,103 @@
+{
+    "nodes": [
+        {
+            "parameters": {
+                "operation": "runCustomScript",
+                "scriptCode": "/***********************\n * CONFIGURACIÓN DINÁMICA\n ***********************/\nconst MOBILE_NUMBER = $json['mobile'];\nconst AMOUNT = $json['amount'] || '10';\nconst OPERATOR = ($json['operator'] || 'telcel').toLowerCase();\n\nconst TARGET_URL = 'https://undostres.com.mx/';\nconst delay = (ms) => new Promise(r => setTimeout(r, ms));\n\n/***********************\n * COOKIES DE SESIÓN\n ***********************/\nconst sessionCookies = [\n  {\n    name: 'JWT',\n    value: 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE3Njg5NDYyNTAsImF1ZCI6ImVlMGY0OTU1OTYyYWJlNjE0N2E3NjExMmJlZTRhYWNkN2FiYzIxNzAiLCJkYXRhIjoiK1NkRUdCbWhlSVwvUFRLK1k1amlPbitiMnFwYUdZQVwvXC9CckFrd2JVRTdEcU1Lam5WKzFXTm9mdFpxT2pWMzFCRGVyYVVBY2ZzekxXdUtROEZ1dkpxR0hLNDQ2R1wvR05idXVSU1hEMXVcL3MwUlhlcnc5b2pnckNiaHlQZWwxYmE4YnNRMmw3K2hQbFVqMEo0K1oxZ1pQYVFlUUdBM2NtUEljMnZJellUWHpud2VcLzArR1M1NlZicXRTWktiOEl5cUxjRFh6MElUMWViUW1yYU0zSVR3VzJlREF3NEhTenNqUWIwQkZKS0JBRTF5NHRGMTdxK3NRTndyXC9TZ1hFcEZTRUdZVWJ4RXJ5clhGd0FYdE5JUEs5WnNRZUlRXC9qem9qWUcyQUh5MzRKVG5oUUFKNW52blZqVkhKNUFvdWJnKzFSeiJ9.QJgOesSQF66tekDWn1xmAXdWbMH5sZgPZPZ4aIFjQAw',\n    domain: '.undostres.com.mx',\n    path: '/',\n    httpOnly: true,\n    secure: true\n  },\n  {\n    name: 'PHPSESSID',\n    value: 'b46cca075e8c52e3cf8d5a5ce4702fd3',\n    domain: 'undostres.com.mx',\n    path: '/'\n  },\n  {\n    name: 'deviceType',\n    value: 'desktop',\n    domain: 'undostres.com.mx',\n    path: '/'\n  },\n  {\n    name: 'cookie_device_id',\n    value: '486c9c4579e7d3ba75f60ab6ee9c8099',\n    domain: 'undostres.com.mx',\n    path: '/'\n  },\n  {\n    name: 'fp',\n    value: '42f9e0b78e629f58ebaef805cc853321',\n    domain: 'undostres.com.mx',\n    path: '/'\n  },\n  {\n    name: 'UDTID',\n    value: 'iAuRA9GgtYHssIACnYECJw==',\n    domain: 'undostres.com.mx',\n    path: '/'\n  }\n];\n\ntry {\n  $page.setDefaultTimeout(90000);\n  \n  await $page.setUserAgent(\n    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36'\n  );\n\n  await $page.setViewport({ width: 1366, height: 768 });\n  await $page.setCookie(...sessionCookies);\n\n  console.log('Navegando a:', TARGET_URL);\n  \n  try {\n    await $page.goto(TARGET_URL, { waitUntil: 'load', timeout: 30000 });\n  } catch (e) {\n    await $page.goto(TARGET_URL, { waitUntil: 'domcontentloaded', timeout: 30000 });\n  }\n  \n  await delay(8000);\n  console.log('✓ Página cargada');\n\n  /***********************\n   * 1. NÚMERO DE CELULAR\n   ***********************/\n  console.log('Paso 1: Número...');\n  \n  await $page.evaluate((phone) => {\n    const input = document.querySelector('input[name=\"mobile\"][data-qa=\"celular-mobile\"]');\n    if (input) {\n      input.focus();\n      if (typeof mobileFieldFocusHandler === 'function') {\n        mobileFieldFocusHandler(new Event('focus', { bubbles: true }));\n      }\n      input.value = phone;\n      input.classList.add('user_changed');\n      if (typeof mobileFieldInputHandler === 'function') {\n        const evt = new Event('input', { bubbles: true });\n        evt.target = input;\n        mobileFieldInputHandler(evt);\n      }\n      input.dispatchEvent(new Event('input', { bubbles: true }));\n      input.dispatchEvent(new Event('change', { bubbles: true }));\n    }\n  }, MOBILE_NUMBER);\n  \n  console.log('✓ Número:', MOBILE_NUMBER);\n  await delay(5000);\n\n  /***********************\n   * 2. OPERADOR\n   ***********************/\n  console.log('Paso 2: Operador...');\n  \n  const operatorValue = await $page.evaluate(() => {\n    return document.querySelector('input[name=\"operator\"]')?.value || null;\n  });\n  \n  if (!operatorValue) {\n    await $page.click('input[name=\"operator\"][data-qa=\"celular-operator\"]');\n    await delay(3000);\n    \n    await $page.evaluate((op) => {\n      const containers = document.querySelectorAll('.suggestion-ul-container, ul[suggest=\"mobile-operator\"]');\n      for (const container of containers) {\n        if (container.offsetParent !== null) {\n          const options = Array.from(container.querySelectorAll('li a'));\n          const target = options.find(opt => opt.innerText.toLowerCase().includes(op));\n          if (target) {\n            target.click();\n            return;\n          }\n          if (options.length > 0) options[0].click();\n        }\n      }\n    }, OPERATOR);\n    \n    await delay(3000);\n  }\n  \n  console.log('✓ Operador OK');\n\n  /***********************\n   * 3. MONTO\n   ***********************/\n  console.log('Paso 3: Monto...');\n  \n  await $page.click('input[name=\"amount\"][data-qa=\"celular-amount\"]');\n  await delay(3000);\n  \n  await $page.evaluate((amt) => {\n    const containers = document.querySelectorAll('.suggestion-li-container, ul[suggest=\"mobile-operator_amount\"]');\n    for (const container of containers) {\n      if (container.offsetParent !== null) {\n        const options = Array.from(container.querySelectorAll('li a'));\n        const target = options.find(opt => {\n          const text = opt.innerText;\n          return text.includes(amt) || text.includes('$' + amt);\n        });\n        if (target) {\n          target.click();\n          return;\n        }\n        if (options.length > 0) options[0].click();\n      }\n    }\n  }, AMOUNT);\n  \n  console.log('✓ Monto OK');\n  await delay(3000);\n\n  /***********************\n   * 4. BOTÓN SIGUIENTE\n   ***********************/\n  console.log('Paso 4: Siguiente...');\n  \n  await $page.evaluate(() => {\n    const btn = document.querySelector('button.buttonRecharge[data-qa=\"celular-pay\"]');\n    if (btn) btn.scrollIntoView({ behavior: 'smooth', block: 'center' });\n  });\n  \n  await delay(1000);\n  await $page.click('button.buttonRecharge[data-qa=\"celular-pay\"]');\n  console.log('✓ Click en Siguiente');\n  await delay(3000);\n\n  // Esperar página de pago\n  try {\n    await $page.waitForFunction(() => {\n      return document.querySelector('#paypal-toggle') !== null ||\n             document.body.textContent.includes('PayPal');\n    }, { timeout: 30000 });\n    console.log('✓ Página de pago cargada');\n  } catch (e) {\n    console.log('⚠ Timeout página de pago');\n  }\n\n  await delay(3000);\n\n  /***********************\n   * 5. EXPANDIR SECCIÓN PAYPAL\n   ***********************/\n  console.log('Paso 5: Expandir PayPal...');\n  \n  // Click en PayPal toggle para expandir la sección\n  const paypalExpanded = await $page.evaluate(() => {\n    const toggle = document.querySelector('#paypal-toggle');\n    if (toggle) {\n      const isExpanded = toggle.getAttribute('aria-expanded') === 'true';\n      if (!isExpanded) {\n        toggle.click();\n        return true;\n      }\n      return true;\n    }\n    return false;\n  });\n  \n  if (!paypalExpanded) {\n    console.log('⚠ No se encontró toggle de PayPal');\n  }\n  \n  console.log('✓ PayPal expandido');\n  await delay(3000);\n\n  /***********************\n   * 6. CLICK EN \"PAGAR CON PAYPAL\"\n   ***********************/\n  console.log('Paso 6: Click en Pagar con PayPal...');\n  \n  // Scroll al botón de pagar\n  await $page.evaluate(() => {\n    const btn = document.querySelector('#paypalbuttonOwrs, .pay3');\n    if (btn) btn.scrollIntoView({ behavior: 'smooth', block: 'center' });\n  });\n  \n  await delay(1000);\n  \n  // Click en el botón \"Pagar con PayPal\"\n  const paypalButtonClicked = await $page.evaluate(() => {\n    const btn = document.querySelector('#paypalbuttonOwrs');\n    if (btn) {\n      // Llamar la función doPPBAPost si existe\n      if (typeof doPPBAPost === 'function') {\n        const fakeEvent = new Event('click', { bubbles: true, cancelable: true });\n        doPPBAPost(fakeEvent);\n        return true;\n      }\n      btn.click();\n      return true;\n    }\n    return false;\n  });\n  \n  if (!paypalButtonClicked) {\n    const screenshot = await $page.screenshot({ encoding: 'base64', fullPage: true });\n    return [{\n      json: {\n        status: \"error\",\n        message: \"No se encontró el botón 'Pagar con PayPal'\",\n        screenshot: `data:image/png;base64,${screenshot}`,\n        timestamp: new Date().toISOString()\n      }\n    }];\n  }\n  \n  console.log('✓ Click en Pagar con PayPal');\n  await delay(5000);\n\n  // Esperar respuesta del servidor\n  console.log('Esperando confirmación...');\n  \n  try {\n    await $page.waitForResponse(\n      res => res.url().includes(\"order_place.php\") && res.status() === 200,\n      { timeout: 30000 }\n    );\n    console.log('✓ Orden procesada');\n  } catch (e) {\n    console.log('⚠ Timeout esperando order_place.php');\n  }\n\n  await delay(3000);\n\n  const finalUrl = await $page.url();\n  const screenshot = await $page.screenshot({ encoding: 'base64', fullPage: true });\n  \n  console.log('✓ Proceso completado');\n  console.log('URL final:', finalUrl);\n  \n  return [{ \n    json: { \n      status: \"success\", \n      mobile: MOBILE_NUMBER,\n      operator: OPERATOR,\n      amount: AMOUNT,\n      finalUrl,\n      screenshot: `data:image/png;base64,${screenshot}`,\n      timestamp: new Date().toISOString() \n    } \n  }];\n  \n} catch (error) {\n  console.error('Error:', error.message);\n  \n  let screenshot = null;\n  let currentUrl = 'unknown';\n  \n  try {\n    currentUrl = await $page.url();\n    screenshot = await $page.screenshot({ encoding: 'base64', fullPage: true });\n  } catch (e) {}\n  \n  return [{ \n    json: { \n      status: \"error\", \n      message: error.message,\n      currentUrl,\n      screenshot: screenshot ? `data:image/png;base64,${screenshot}` : null,\n      timestamp: new Date().toISOString() \n    } \n  }];\n}",
+                "options": {}
+            },
+            "id": "376316a2-c2e5-49ad-b611-30a4ea264bd8",
+            "name": "Puppeteer",
+            "type": "n8n-nodes-puppeteer.puppeteer",
+            "typeVersion": 1,
+            "position": [
+                912,
+                240
+            ]
+        },
+        {
+            "parameters": {},
+            "id": "e0a0a0a0-a0a0-a0a0-a0a0-a0a0a0a0a0a0",
+            "name": "Manual Trigger",
+            "type": "n8n-nodes-base.manualTrigger",
+            "typeVersion": 1,
+            "position": [
+                256,
+                240
+            ]
+        },
+        {
+            "parameters": {
+                "values": {
+                    "string": [
+                        {
+                            "name": "input_text",
+                            "value": "recarga 56"
+                        }
+                    ]
+                },
+                "options": {}
+            },
+            "id": "b0b0b0b0-b0b0-b0b0-b0b0-b0b0b0b0b0b0",
+            "name": "Simulate Input",
+            "type": "n8n-nodes-base.set",
+            "typeVersion": 1,
+            "position": [
+                464,
+                240
+            ]
+        },
+        {
+            "parameters": {
+                "jsCode": "// Entrada de texto (ej: \"recarga 56\", \"recarga 5576176856 telcel\")\nconst input = ($input.first().json.input_text || 'recarga 56')\n  .trim()\n  .toLowerCase();\n\nconst parts = input.split(/\\s+/);\n\nlet code = parts[parts.length - 1];\nlet operator = 'unefon';\n\nconst knownOperators = [\n  'unefon',\n  'telcel',\n  'movistar',\n  'att',\n  'at&t',\n  'bait',\n  'virgin'\n];\n\n// Si el último token es operador\nif (knownOperators.includes(code)) {\n  operator = code;\n  code = parts[parts.length - 2] || code;\n}\n// Caso: \"recarga 56 telcel\"\nelse if (parts.length >= 2 && parts[0] === 'recarga') {\n  code = parts[1];\n  if (parts.length >= 3) {\n    operator = parts[2];\n  }\n}\n\n// Alias / shortcuts\nconst phoneMap = {\n  '56': '5576176856'\n};\n\nconst mobile = phoneMap[code] || code;\n\nreturn [\n  {\n    json: {\n      mobile,\n      operator,\n      amount: '10'\n    }\n  }\n];\n"
+            },
+            "id": "c0c0c0c0-c0c0-c0c0-c0c0-c0c0c0c0c0c0",
+            "name": "Format Data",
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 1,
+            "position": [
+                656,
+                240
+            ]
+        }
+    ],
+    "connections": {
+        "Manual Trigger": {
+            "main": [
+                [
+                    {
+                        "node": "Simulate Input",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Simulate Input": {
+            "main": [
+                [
+                    {
+                        "node": "Format Data",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Format Data": {
+            "main": [
+                [
+                    {
+                        "node": "Puppeteer",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        }
+    },
+    "pinData": {},
+    "meta": {
+        "instanceId": "a6da7293f7167a9dab42629b8ded30bcba61db98b459f04b7b3775d9bd86d096"
+    }
+}

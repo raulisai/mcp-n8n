@@ -1,0 +1,192 @@
+{
+    "name": "Antigravity n8n MCP Server",
+    "nodes": [
+        {
+            "parameters": {
+                "path": "antigravity-mcp",
+                "authentication": "none",
+                "options": {}
+            },
+            "id": "e9366e6a-7d9a-47ef-ba33-882250325f1c",
+            "name": "MCP Server Trigger",
+            "type": "n8n-nodes-langchain.mcptrigger",
+            "typeVersion": 1,
+            "position": [
+                380,
+                240
+            ]
+        },
+        {
+            "parameters": {
+                "toolName": "list_workflows",
+                "toolDescription": "Returns a list of all workflows in the n8n instance including their IDs and status.",
+                "method": "GET",
+                "url": "={{$env.N8N_URL || 'http://localhost:5678'}}/api/v1/workflows",
+                "authentication": "predefinedCredentialType",
+                "nodeCredentialType": "n8nApi",
+                "options": {}
+            },
+            "id": "6d9f7a8c-1234-4abc-9def-0123456789ab",
+            "name": "list_workflows",
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 4,
+            "position": [
+                600,
+                100
+            ]
+        },
+        {
+            "parameters": {
+                "toolName": "get_workflow",
+                "toolDescription": "Retrieves the full JSON definition of a specific workflow by ID.",
+                "method": "GET",
+                "url": "={{$env.N8N_URL || 'http://localhost:5678'}}/api/v1/workflows/{{$node.item.json.id}}",
+                "authentication": "predefinedCredentialType",
+                "nodeCredentialType": "n8nApi",
+                "options": {}
+            },
+            "id": "7e0f8b9d-2345-5bcd-0efg-123456789abc",
+            "name": "get_workflow",
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 4,
+            "position": [
+                600,
+                250
+            ]
+        },
+        {
+            "parameters": {
+                "toolName": "create_workflow",
+                "toolDescription": "Creates a new workflow from a JSON definition.",
+                "method": "POST",
+                "url": "={{$env.N8N_URL || 'http://localhost:5678'}}/api/v1/workflows",
+                "authentication": "predefinedCredentialType",
+                "nodeCredentialType": "n8nApi",
+                "sendBody": true,
+                "bodyParameters": {
+                    "parameters": [
+                        {
+                            "name": "name",
+                            "value": "={{$node.item.json.name}}"
+                        },
+                        {
+                            "name": "nodes",
+                            "value": "={{$node.item.json.nodes}}"
+                        },
+                        {
+                            "name": "connections",
+                            "value": "={{$node.item.json.connections}}"
+                        }
+                    ]
+                },
+                "options": {}
+            },
+            "id": "8f1a9c0e-3456-6cde-1fgh-23456789abcd",
+            "name": "create_workflow",
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 4,
+            "position": [
+                600,
+                400
+            ]
+        },
+        {
+            "parameters": {
+                "toolName": "execute_workflow",
+                "toolDescription": "Triggers the execution of a workflow via its webhook URL. Requires the production webhook URL.",
+                "method": "POST",
+                "url": "={{$node.item.json.webhookUrl}}",
+                "sendBody": true,
+                "bodyParameters": {
+                    "parameters": [
+                        {
+                            "name": "data",
+                            "value": "={{$node.item.json.data}}"
+                        }
+                    ]
+                },
+                "options": {}
+            },
+            "id": "9a2b0d1f-4567-7def-2ghi-3456789abcde",
+            "name": "execute_workflow",
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 4,
+            "position": [
+                600,
+                550
+            ]
+        },
+        {
+            "parameters": {
+                "jsCode": "const checklist = [\n  \"Has a clear Trigger node?\",\n  \"All HTTP nodes use credentials?\",\n  \"Error handling (On Error -\u003e Continue) used where necessary?\",\n  \"No hardcoded secrets in Code nodes?\",\n  \"Proper naming conventions for nodes?\"\n];\n\nreturn {\n  workflow_id: items[0].json.id,\n  audit_results: checklist.map(item =\u003e ({ item, status: \"Review Needed\" })),\n  summary: \"Review the workflow structure against security and performance best practices.\"\n};"
+            },
+            "id": "0b1c2e3f-5678-8efg-3hij-456789abcdef",
+            "name": "audit_workflow",
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+                850,
+                250
+            ]
+        },
+        {
+            "parameters": {
+                "jsCode": "const workflow = items[0].json;\nconst description = `This workflow was automatically documented at ${new Date().toISOString()}.\\n` +\n                   `It contains ${workflow.nodes.length} nodes and ${Object.keys(workflow.connections).length} series of connections.`;\n\nreturn {\n  ...workflow,\n  description: description\n};"
+            },
+            "id": "1c2d3e4f-6789-9fgh-4ijk-567890abcdef",
+            "name": "auto_document",
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+                850,
+                400
+            ]
+        }
+    ],
+    "connections": {
+        "MCP Server Trigger": {
+            "main": [
+                [
+                    {
+                        "node": "list_workflows",
+                        "type": "main",
+                        "index": 0
+                    },
+                    {
+                        "node": "get_workflow",
+                        "type": "main",
+                        "index": 0
+                    },
+                    {
+                        "node": "create_workflow",
+                        "type": "main",
+                        "index": 0
+                    },
+                    {
+                        "node": "execute_workflow",
+                        "type": "main",
+                        "index": 0
+                    },
+                    {
+                        "node": "audit_workflow",
+                        "type": "main",
+                        "index": 0
+                    },
+                    {
+                        "node": "auto_document",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        }
+    },
+    "settings": {
+        "executionOrder": "v1"
+    },
+    "staticData": null,
+    "meta": {
+        "templateId": ""
+    },
+    "pinData": {}
+}
