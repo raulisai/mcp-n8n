@@ -81,6 +81,7 @@ n8n update <workflow_id> workflow.json
 n8n/
 ├── core/                       # Motor MCP (auto-contenido)
 │   ├── n8n_manager.py         # CLI principal
+│   ├── requirements.txt       # Dependencias Python
 │   ├── nantigravity_mcp_config.json
 │   ├── n8n_mcp_server_workflow.json
 │   ├── walkthrough.md
@@ -186,6 +187,10 @@ Si prefieres configurar manualmente:
 
 ### 1. Instalar Dependencias
 ```bash
+# Opción A: Desde requirements.txt (recomendado)
+pip install -r core\requirements.txt
+
+# Opción B: Manual
 pip install requests python-dotenv
 ```
 

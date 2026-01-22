@@ -27,12 +27,23 @@ echo.
 
 REM Instalar dependencias
 echo [2/5] Instalando dependencias de Python...
-pip install --quiet requests python-dotenv
-if errorlevel 1 (
-    echo [ADVERTENCIA] Hubo un problema instalando dependencias
-    echo Intentando continuar...
+if exist "core\requirements.txt" (
+    pip install -q -r core\requirements.txt
+    if errorlevel 1 (
+        echo [ADVERTENCIA] Hubo un problema instalando dependencias
+        echo Intentando continuar...
+    ) else (
+        echo [OK] Dependencias instaladas desde requirements.txt
+    )
+) else (
+    echo [ADVERTENCIA] No se encontro core\requirements.txt
+    echo Instalando dependencias manualmente...
+    pip install --quiet requests python-dotenv
+    if errorlevel 1 (
+        echo [ADVERTENCIA] Hubo un problema instalando dependencias
+        echo Intentando continuar...
+    )
 )
-echo [OK] Dependencias instaladas
 echo.
 
 REM Crear .env si no existe

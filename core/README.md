@@ -22,6 +22,20 @@ python n8n_manager.py run <id> --data '{"key": "value"}'
 
 ---
 
+### `requirements.txt`
+**Dependencias de Python** necesarias para el CLI.
+
+**Contenido:**
+- `requests>=2.31.0` - Cliente HTTP para la API de n8n
+- `python-dotenv>=1.0.0` - Gestión de variables de entorno
+
+**Instalación:**
+```bash
+pip install -r core/requirements.txt
+```
+
+---
+
 ### `nantigravity_mcp_config.json`
 **Configuración del servidor MCP** para Google Antigravity.
 
