@@ -51,21 +51,23 @@ Your configuration is already applied to `~/.gemini/antigravity/mcp_config.json`
 ## 🐍 Step 3: Use the n8n Manager CLI
 
 ### Setup
-The CLI manager is now in the `core/` folder and uses a `.env` file for credentials.
+The CLI manager is located in the root folder via the global `n8n` command.
 
-1. **Configure environment** (first time only):
+1. **Configure environment** (Automated):
    ```bash
-   # Copy the example file
-   copy .env.example .env
-   
-   # Edit with your credentials
-   notepad .env
+   # Windows:
+   deploy.bat
+
+   # Linux / macOS:
+   chmod +x deploy.sh && ./deploy.sh
    ```
 
 2. **Add to PATH** (for global access):
-   - Press `Win + X` → System → Advanced → Environment Variables
-   - Edit **Path** → Add: `C:\Users\raul_\Documents\code\n8n`
-   - Restart CMD
+   - **Windows**: The `setup.bat` (called by `deploy.bat`) attempts to do this automatically. Restart CMD to see changes.
+   - **Linux/macOS**: Add `export PATH="$PATH:$(pwd)"` to your `~/.bashrc` or `~/.zshrc`.
+
+3. **Edit Credentials**:
+   Open the `.env` file in the root directory and add your `N8N_API_KEY` and `N8N_URL`.
 
 ### Examples
 Once configured, you can run from anywhere:

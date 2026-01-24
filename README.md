@@ -6,18 +6,27 @@ Gestor de workflows de **n8n** desde la línea de comandos con integración MCP 
 
 ## ⚡ Instalación Rápida
 
-### Un Solo Comando
+### Un Solo Comando (Automático)
+Elige el comando según tu sistema para configurar todo al instante:
+
+**Windows (CMD/PowerShell):**
 ```bash
-setup.bat
+deploy.bat
 ```
 
-**Eso es todo.** El script automáticamente:
-- ✅ Instala dependencias de Python
-- ✅ Configura tu `.env`
-- ✅ Agrega `n8n` al PATH del sistema
-- ✅ Verifica que todo funcione
+**Linux / macOS / iOS (Terminal):**
+```bash
+chmod +x deploy.sh && ./deploy.sh
+```
 
-**Después**: Reinicia CMD y usa `n8n` desde cualquier directorio.
+**Eso es todo.** El script detectará tu sistema y automáticamente:
+- ✅ Instalará dependencias de Python
+- ✅ Configurará tu `.env`
+- ✅ Creará el comando global `n8n`
+- ✅ Agregará (o indicará cómo agregar) `n8n` al PATH del sistema
+- ✅ Verificará que todo funcione
+
+**Después**: Reinicia tu terminal y usa `n8n` desde cualquier directorio.
 
 ---
 
